@@ -10,7 +10,7 @@ run cabal update && \
 from debian:11.6-slim
 workdir /app
 
-run apt update && apt install -y libgmp10
+run apt update && apt install -y libgmp10 ca-certificates
 
 copy --from=build /app/dtek.link .
 
