@@ -1,0 +1,10 @@
+version: '3.7'
+
+services:
+  link:
+    build: .
+    restart: unless-stopped
+    environment:
+      - API=https://cms.dhack.se/items/links
+    ports:
+      - "3000:3000"

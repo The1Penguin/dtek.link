@@ -6,7 +6,6 @@
 module Main where
 
 import           Web.Scotty                           hiding (Options)
-import           WithCli
 import           Network.Wai.Middleware.RequestLogger
 import           Network.Wai.Middleware.Cors
 import           Control.Monad.IO.Class
@@ -14,14 +13,10 @@ import           Network.HTTP.Types.Status
 import           Data.Aeson                           hiding (Options)
 import           Data.Aeson.Types                     hiding (Options)
 import           Data.Text.Internal.Lazy
-import           Data.Text                            hiding (Text, head, filter)
-import           Network.HTTP.Simple
+import           GHC.Generics                         hiding (to, from)
 
-data Options = Options
-  {
-    port :: Int
-  , apiURL :: String
-  } deriving (Show, Generic, HasArguments)
+import           Network.HTTP.Simple
+import System.Environment (getEnv)
 
 data Redirects = Redirects
   {
@@ -37,7 +32,7 @@ instance FromJSON Redirects where
     prependFailure "parsing JSONResponse failed, "
       (typeMismatch "Object" invalid)
 
-data Data = Data {redirs :: [Redirects]}
+newtype Data = Data {redirs :: [Redirects]}
   deriving (Show, Generic)
 
 instance FromJSON Data where
@@ -64,13 +59,9 @@ routes address = do
 
 fetchRedirs :: String -> IO [Redirects]
 fetchRedirs address = do
-    request <- parseRequest address
-    res <- httpJSON request
+    req <- parseRequest address
+    res <- httpJSON req
     return $ redirs (getResponseBody res :: Data)
 
 main :: IO ()
-main = withCli run
-
-run :: Options -> IO ()
-run (Options port api) =
-  scotty port $ routes api
+main = scotty 3000 . routes =<< getEnv "API"
